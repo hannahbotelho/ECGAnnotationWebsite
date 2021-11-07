@@ -19,28 +19,28 @@ console.dir ( ip.address() );
 
 const auth = basicAuth({
     users: {
-        gab_ann: '3rugiw',
-        jake_ann: '8ejibu',
+        USER1: 'XXX',
+        USER2: 'YYY',
     },
 });
 
 app.get('/authenticate', auth, (req, res) => {
     console.log('auth called');
-    if (req.auth.user === 'gab_ann') {
+    if (req.auth.user === 'USER1') {
         res.send('1');
-    } else if (req.auth.user === 'jake_ann') {
+    } else if (req.auth.user === 'USER2') {
         res.send('2');
-    } else if (req.auth.user === 'seb_ann') {
+    } else if (req.auth.user === 'USER3') {
         res.send('3');
     }
 });
 
 var connection = mysql.createConnection({
-    host     : 'tinman',
+    host     : 'MYSEREVER',
     user     : 'root',
-    password : '1234udel',
+    password : 'MYPASSWORD',
     database : 'ECGDB',
-    port : 8586
+    port : MYPOrt
 });
 
 console.log('Connecting to the MySQL...');
