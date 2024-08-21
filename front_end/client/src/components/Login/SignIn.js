@@ -37,7 +37,7 @@ class SignIn extends React.Component {
         let tempUsername = this.username;
         let tempPassword = this.password;
 
-        axios.get('http://localhost:5000/authenticate', {auth: {tempUsername, tempPassword}})
+        axios.get('http://localhost:3000/authenticate', {auth: {tempUsername, tempPassword}})
             .then(response => console.log(response)
             )
             .catch(err => console.log(err));

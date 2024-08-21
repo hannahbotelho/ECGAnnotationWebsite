@@ -67,7 +67,7 @@ export default function SignIn() {
 
         this.props.history.push('/mainContainer');
 
-             axios.get('http://localhost:5000/authenticate', {auth: {username, password}})
+             axios.get('http://localhost:3000/authenticate', {auth: {username, password}})
                 .then(response => console.log(response)
                 )
                 .catch(err => console.log(err));

@@ -36,7 +36,7 @@ let colorDisagFirstOpacity = 'rgb(255, 191, 0,' + lightOpacity + ')';
 let colorDisagSecond = 'rgb(63, 224, 208)';
 let colorDisagSecondOpacity = 'rgb(163, 224, 208,' + lightOpacity + ')';
 
-let serverURL = "https://tinman.cis.udel.edu/ECGAnnotation/backend/";
+let serverURL = "http://localhost:3000/";
 
 class GraphAnnChecker extends Component {
 

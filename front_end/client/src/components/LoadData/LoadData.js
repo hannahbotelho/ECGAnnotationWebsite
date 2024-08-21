@@ -17,7 +17,7 @@ const options = [];
 //import TextField from 'material-ui';
 
 
-let serverURL = "https://tinman.cis.udel.edu/ECGAnnotation/backend/";
+let serverURL = "http://localhost:3000/";
 
 
 export default class LoadData extends React.Component {

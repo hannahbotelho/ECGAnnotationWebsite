@@ -51,7 +51,7 @@ let colorDisagFirstOpacity = 'rgb(8, 196, 217,' + lightOpacity + ')';
 let colorDisagSecond = 'rgb(63, 224, 208)';
 let colorDisagSecondOpacity = 'rgb(8, 196, 217,' + lightOpacity + ')';
 
-let serverURL = "https://tinman.cis.udel.edu/ECGAnnotation/backend/";
+let serverURL = "http://localhost:3000/";
 
 class GraphReadOnly extends Component {
 

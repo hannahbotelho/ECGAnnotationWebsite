@@ -1,21 +1,22 @@
-const express = require('express')
-const cors = require('cors')
-const mysql = require('mysql')
+const express = require('express');
+const cors = require('cors');
+const mysql = require('mysql2');
 const basicAuth = require('express-basic-auth');
 const app = express();
-var bodyParser = require('body-parser')
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-    extended: true
-}));
+var bodyParser = require('body-parser');
+
+require('dotenv').config();
+
+const MAX_RETRIES = 10;
+const RETRY_DELAY = 5000; // 5 seconds
+
+let retryCount = 0;
+app.use(bodyParser.json());       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use(cors());
 app.use(express.json());       // to support JSON-encoded bodies
 app.use(express.urlencoded()); // to support URL-encoded bodies
-
-var ip = require("ip");
-console.dir ( ip.address() );
-
-
 
 const auth = basicAuth({
     users: {
@@ -35,27 +36,121 @@ app.get('/authenticate', auth, (req, res) => {
     }
 });
 
-var connection = mysql.createConnection({
-    host     : 'MYSEREVER',
-    user     : 'root',
-    password : 'MYPASSWORD',
-    database : 'ECGDB',
-    port : MYPOrt
-});
+const mysqlConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'admin',
+    port: process.env.DB_PORT || '3306'
+};
 
-console.log('Connecting to the MySQL...');
-connection.connect(err => {
-    if(err) {
-        console.log(err);
-    } else {
-        console.log('Connection to MySQL Established');
-    }
-});
+let connection;
 
+const connectToDatabase = () => {
+    connection = mysql.createConnection({ ...mysqlConfig, database: 'ecgannotation' });
+
+    const connectWithRetry = () => {
+        connection.connect(err => {
+            if (err) {
+                console.error('Error connecting to the database: ', err);
+                retryCount++;
+                
+                if (retryCount <= MAX_RETRIES) {
+                    console.log(`Retrying connection in ${RETRY_DELAY / 1000} seconds...`);
+                    setTimeout(connectWithRetry, RETRY_DELAY);
+                } else {
+                    console.error('Max retries reached. Could not connect to the database.');
+                }
+                
+                return;
+            }
+            console.log('Connected to the MySQL database');
+            createTables(); // Create tables after successful connection
+        });
+    };
+
+    connectWithRetry();
+};
+
+const createDatabaseAndTables = () => {
+    connection = mysql.createConnection(mysqlConfig);
+    
+    connection.query('CREATE DATABASE IF NOT EXISTS ecgannotation', (err, results) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log('Database created successfully');
+        connectToDatabase(); // Connect to the database after it's created
+    });
+};
+
+const createTables = () => {
+    const createCommentsTable = `
+        CREATE TABLE IF NOT EXISTS Comments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            ECGID INT,
+            AnnID INT,
+            Comment TEXT
+        )`;
+    const createAnnotationFirstTable = `
+        CREATE TABLE IF NOT EXISTS AnnotationFirst (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            ECGID INT,
+            LeadID INT,
+            PointIndex INT,
+            PointType VARCHAR(255)
+        )`;
+    const createAnnotationSecondTable = `
+        CREATE TABLE IF NOT EXISTS AnnotationSecond (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            ECGID INT,
+            LeadID INT,
+            PointIndex INT,
+            PointType VARCHAR(255)
+        )`;
+    const createAnnotationThirdTable = `
+        CREATE TABLE IF NOT EXISTS AnnotationThird (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            ECGID INT,
+            LeadID INT,
+            PointIndex INT,
+            PointType VARCHAR(255)
+        )`;
+
+    connection.query(createCommentsTable, (err, results) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log('Comments table created successfully');
+    });
+    connection.query(createAnnotationFirstTable, (err, results) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log('AnnotationFirst table created successfully');
+    });
+    connection.query(createAnnotationSecondTable, (err, results) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log('AnnotationSecond table created successfully');
+    });
+    connection.query(createAnnotationThirdTable, (err, results) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log('AnnotationThird table created successfully');
+    });
+};
+
+// Initialize the database and create tables
+createDatabaseAndTables();
 // Insert Comment Method
-
 app.post('/insertComment', function(req, res) {
-
     const ecgID = req.body.ecgID;
     const comment = req.body.comment;
     const annID = req.body.annID;
@@ -75,7 +170,6 @@ app.post('/insertComment', function(req, res) {
 });
 
 app.post('/updateComment', function(req, res) {
-
     const ecgID = req.body.ecgID;
     const comment = req.body.comment;
     const annID = req.body.annID;
@@ -91,7 +185,7 @@ app.post('/updateComment', function(req, res) {
             res.json({'status': 200, 'msg': rows});
         }
     });
-    console.log('Insert Hit');
+    console.log('Update Hit');
 });
 
 // Get Comment Method
@@ -113,9 +207,7 @@ app.get('/getComment', function (req, res) {
 });
 
 // Insert Methods
-
 app.post('/insertFirstAnnotator', function(req, res) {
-
     const ecgID = req.body.ecgID;
     const leadID = req.body.leadID;
     const pointIndex = req.body.pointIndex;
@@ -136,7 +228,6 @@ app.post('/insertFirstAnnotator', function(req, res) {
 });
 
 app.post('/insertSecondAnnotator', function(req, res) {
-
     const ecgID = req.body.ecgID;
     const leadID = req.body.leadID;
     const pointIndex = req.body.pointIndex;
@@ -157,7 +248,6 @@ app.post('/insertSecondAnnotator', function(req, res) {
 });
 
 app.post('/insertThirdAnnotator', function(req, res) {
-
     const ecgID = req.body.ecgID;
     const leadID = req.body.leadID;
     const pointIndex = req.body.pointIndex;
@@ -176,6 +266,7 @@ app.post('/insertThirdAnnotator', function(req, res) {
     });
     console.log('Insert Hit');
 });
+
 
 // Delete Methods
 
@@ -321,8 +412,8 @@ app.get('/api/getList', (req,res) => {
     console.log('Sent list of items');
 });
 
-const port = 5000;
-const hostAddress = 'http://tinman.cis.udel.edu/ECGAnnotation/backend';
-app.listen(port);
-
-console.log('App is listening on port ' + port);
+// Starting the server
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});

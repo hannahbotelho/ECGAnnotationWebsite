@@ -26,7 +26,7 @@ import axios from "axios";
 
 var selectedTab;
 
-let serverURL = "https://tinman.cis.udel.edu/ECGAnnotation/backend/";
+let serverURL = "http://localhost:3000/";
 
 export const history = createHashHistory();
 

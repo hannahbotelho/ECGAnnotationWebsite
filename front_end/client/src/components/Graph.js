@@ -30,7 +30,7 @@ let colorOnOpacity = 'rgb(27, 20, 100,' + lightOpacity + ')';
 let colorOff = 'rgb(111, 30, 81)';
 let colorOffOpacity = 'rgb(111, 30, 81,' + lightOpacity + ')';
 
-let serverURL = "https://tinman.cis.udel.edu/ECGAnnotation/backend/";
+let serverURL = "http://localhost:3000/";
 
 class Graph extends Component {
 
